@@ -1,0 +1,126 @@
+
+// INSERT
+
+//function generateRandomString($length = 10) {
+//    $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+//    $charactersLength = strlen($characters);
+//    $randomString = '';
+//    for ($i = 0; $i < $length; $i++) {
+//        $randomString .= $characters[rand(0, $charactersLength - 1)];
+//    }
+//    return $randomString;
+//}
+//
+//$queryBuilder = new App\QueryBuilderInsert('test_table');
+//$queryBuilder->fields('tekst', 'broj', 'nesto');
+//
+//for ($i = 1; $i < 50; $i++) {
+//    $queryBuilder->addValueRow(generateRandomString(), rand(200, 1000), rand(200, 1000));
+//}
+//
+//var_dump($queryBuilder->compile());
+
+// SELECT
+
+$queryBuilder = new App\QueryBuilderSelect('test_table');
+$subQueryBuilder = new App\QueryBuilderSelect('approved_ids');
+$subQueryBuilder->field('id');
+
+$queryBuilder
+    ->where(
+        new \App\Conditions\LAnd(
+            new App\Conditions\LOr(
+                new App\Conditions\Like('tekst', '%bl%'),
+                new App\Conditions\LAnd(
+                    new App\Conditions\GT('nesto', 200),
+                    new App\Conditions\LT('nesto', 400),
+                    new App\Conditions\NotEqual('nesto', 331)
+                )
+            ),
+            new App\Conditions\NotIn('id', $subQueryBuilder)
+        )
+    )
+    ->orderBy('id', \App\ValueObject\OrderDirection::makeDESC())
+    ->limit(30)
+    ->offset(15)
+    ->paginate(new \App\Pagination(3, 10));
+
+// UPDATE
+
+//$queryBuilder = new App\QueryBuilderUpdate('test_table');
+//$subQueryBuilder = new App\QueryBuilderSelect('approved_ids');
+//$subQueryBuilder->field('id');
+//
+//$queryBuilder
+//    ->where(
+//        new App\Conditions\In('id', $subQueryBuilder)
+//    )
+//    ->setValue(
+//        (new App\ValueObject\UpdateValue())
+//            ->setFieldName('tekst')
+//            ->setValue('A nije ok je on samo je malo debo')
+//    );
+
+// DELETE
+
+//$queryBuilder = new App\QueryBuilderDelete('test_table');
+//$subQueryBuilder = new App\QueryBuilderSelect('approved_ids');
+//$subQueryBuilder->field('id');
+//
+//$queryBuilder
+//    ->where(
+//        new App\Conditions\In('id', $subQueryBuilder)
+//    );
+
+$mysqlClient = new App\SQLClient("127.0.0.1", "test_sticles", "root");
+$result = $mysqlClient->execute($queryBuilder);
+
+//$data = [];
+//
+//foreach ($result as $item) {
+//    $data[] = $item;
+//}
+
+var_dump($queryBuilder->compile());
+//var_dump($result->first());
+
+var_dump($result->getPage());
+var_dump($result->getPerPage());
+var_dump($result->getCurrentItemsCount());
+var_dump($result->getTotalItemsCount());
+var_dump($result->getTotalPageCount());
+var_dump($result->toArray());
+
+//print_r($result);
+
+
+exit;
+
+
+$db_config = [
+	//current development environment
+	"env" => "local",
+	//Localhost
+	"local" => [
+						"host" => "127.0.0.1",
+						"database" => "test_sticles",
+						"username" => "root",
+						"password" => ""
+					 ],
+	//Server
+	"production"  => [
+						"host" => "",
+						"database" => "",
+						"username" => "",
+						"password" => ""
+					 ]
+];
+
+$db = SQL::getInstance();
+
+$db->insert('test_table',
+    [
+        'tekst' => 'Morsy',
+        'broj'	=> 22,
+        'nesto' => 123
+    ]);

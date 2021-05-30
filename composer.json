@@ -1,0 +1,23 @@
+{
+    "name": "piece-of-kake/sql-query-builder",
+    "description": "An OO SQL query builder",
+    "type": "project",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Sasa Andjelic",
+            "email": "sasasmail@gmail.com"
+        }
+    ],
+    "require": {
+        "piece-of-kake/exception": "^1.1",
+        "piece-of-kake/value-object": "^1.0",
+        "ext-pdo": "*",
+        "php": ">=7.1"
+    },
+    "autoload": {
+        "psr-4": {
+            "PoK\\SQLQueryBuilder\\": "src/"
+        }
+    }
+}
