@@ -64,7 +64,11 @@ class MySQLClient implements SQLClientInterface
 
         if ($query instanceof IsCollectable && $query instanceof IsDataType) {
             $statement = $this->connection->prepare($query->compile());
-            $statement->execute();
+            try {
+                $statement->execute();
+            } catch (\PDOException $exception) {
+                $this->handleError($exception);
+            }
 
             $data = $statement->fetchAll($query->getDataType());
             if ($query instanceof CanPaginate && $query->hasPagination()) {
@@ -91,7 +95,11 @@ class MySQLClient implements SQLClientInterface
             return $this->connection->lastInsertId();
         } else {
             $statement = $this->connection->prepare($query->compile());
-            $statement->execute();
+            try {
+                $statement->execute();
+            } catch (\PDOException $exception) {
+                $this->handleError($exception);
+            }
             return $statement->rowCount();
         }
     }
