@@ -56,6 +56,7 @@ class MySQLClient implements SQLClientInterface
             $dsn = "mysql:host=$this->host;charset=$this->charset;";
             if ($this->databaseName) $dsn .= "dbname=$this->databaseName;";
             $this->connection = new PDO($dsn, $this->username, $this->password);
+            $this->connection->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         } catch (\Exception $e) {
             throw new CannotConnectException();
         }

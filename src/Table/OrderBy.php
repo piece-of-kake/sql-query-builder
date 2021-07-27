@@ -11,23 +11,23 @@ class OrderBy implements CanCompile
 
     /**
      * OrderBy constructor.
-     * @param string $fieldNameOrExpression
+     * @param string $columnNameOrExpression
      * @param OrderDirection|null $direction
      */
-    public function __construct(string $fieldNameOrExpression, OrderDirection $direction = null)
+    public function __construct(string $columnNameOrExpression, OrderDirection $direction = null)
     {
-        $this->add($fieldNameOrExpression, $direction);
+        $this->add($columnNameOrExpression, $direction);
     }
 
     /**
-     * @param string $fieldNameOrExpression
+     * @param string $columnNameOrExpression
      * @param OrderDirection|null $direction
      * @return OrderBy
      */
-    public function add(string $fieldNameOrExpression, OrderDirection $direction = null): OrderBy
+    public function add(string $columnNameOrExpression, OrderDirection $direction = null): OrderBy
     {
         $this->orders[] = [
-            $fieldNameOrExpression,
+            $columnNameOrExpression,
             $direction
         ];
         return $this;

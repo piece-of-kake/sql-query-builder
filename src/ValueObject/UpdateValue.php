@@ -7,12 +7,12 @@ use PoK\SQLQueryBuilder\Exceptions\Builder\MissingValueException;
 class UpdateValue
 {
     private $tableName;
-    private $fieldName;
+    private $columnName;
     private $hasValue = false;
     private $value;
     private $expression;
     private $fromTableName;
-    private $fromFieldName;
+    private $fromColumnName;
 
     public function setTableName(string $tableName)
     {
@@ -20,9 +20,9 @@ class UpdateValue
         return $this;
     }
 
-    public function setFieldName(string $fieldName)
+    public function setColumnName(string $columnName)
     {
-        $this->fieldName = $fieldName;
+        $this->columnName = $columnName;
         return $this;
     }
 
@@ -45,9 +45,9 @@ class UpdateValue
         return $this;
     }
 
-    public function setFromFieldName(string $fieldName)
+    public function setFromColumnName(string $columnName)
     {
-        $this->fromFieldName = $fieldName;
+        $this->fromColumnName = $columnName;
         return $this;
     }
 
@@ -55,7 +55,7 @@ class UpdateValue
     {
         $updateQuery = '';
         if ($this->tableName) $updateQuery .= "`$this->tableName`.";
-        $updateQuery .= "`$this->fieldName`=";
+        $updateQuery .= "`$this->columnName`=";
 
         switch (true) {
             case $this->hasValue:
@@ -64,8 +64,8 @@ class UpdateValue
             case $this->expression !== null:
                 $updateQuery .= $this->expression;
                 break;
-            case $this->fromFieldName !== null:
-                $updateQuery .= $this->compileFromFieldName();
+            case $this->fromColumnName !== null:
+                $updateQuery .= $this->compileFromColumnName();
                 break;
             default:
                 throw new MissingValueException();
@@ -86,10 +86,10 @@ class UpdateValue
         }
     }
 
-    private function compileFromFieldName()
+    private function compileFromColumnName()
     {
         return ($this->fromTableName)
-            ? "`$this->fromTableName`.`$this->fromFieldName`"
-            : "`$this->fromFieldName`";
+            ? "`$this->fromTableName`.`$this->fromColumnName`"
+            : "`$this->fromColumnName`";
     }
 }

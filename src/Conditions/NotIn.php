@@ -3,18 +3,18 @@
 namespace PoK\SQLQueryBuilder\Conditions;
 
 use PoK\SQLQueryBuilder\Interfaces\QueryCondition;
-use PoK\SQLQueryBuilder\Exceptions\Builder\MissingFieldNameException;
+use PoK\SQLQueryBuilder\Exceptions\Builder\MissingColumnNameException;
 use PoK\SQLQueryBuilder\Exceptions\Builder\MissingValuesException;
 use PoK\SQLQueryBuilder\Interfaces\CanCompile;
 
 class NotIn implements QueryCondition
 {
-    private $fieldName;
+    private $columnName;
     private $values;
 
-    public function __construct(string $fieldName, $values)
+    public function __construct(string $columnName, $values)
     {
-        $this->fieldName = $fieldName;
+        $this->columnName = $columnName;
         $this->values = $values;
     }
 
@@ -33,12 +33,12 @@ class NotIn implements QueryCondition
             $compiledValues = implode(',', $compiledValues);
         }
 
-        return sprintf('`%s` NOT IN (%s)', $this->fieldName, $compiledValues);
+        return sprintf('`%s` NOT IN (%s)', $this->columnName, $compiledValues);
     }
 
     private function validateCondition()
     {
-        if (!$this->fieldName) throw new MissingFieldNameException();
+        if (!$this->columnName) throw new MissingColumnNameException();
         if (
             ($this->values === null || !is_array($this->values) || empty($this->values)) &&
             !($this->values instanceof CanCompile)

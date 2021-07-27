@@ -3,17 +3,17 @@
 namespace PoK\SQLQueryBuilder\Conditions;
 
 use PoK\SQLQueryBuilder\Interfaces\QueryCondition;
-use PoK\SQLQueryBuilder\Exceptions\Builder\MissingFieldNameException;
+use PoK\SQLQueryBuilder\Exceptions\Builder\MissingColumnNameException;
 use PoK\SQLQueryBuilder\Exceptions\Builder\MissingValueException;
 
 class Like implements QueryCondition
 {
-    private $fieldName;
+    private $columnName;
     private $pattern;
 
-    public function __construct(string $fieldName, $pattern)
+    public function __construct(string $columnName, $pattern)
     {
-        $this->fieldName = $fieldName;
+        $this->columnName = $columnName;
         $this->pattern = $pattern;
     }
 
@@ -22,14 +22,14 @@ class Like implements QueryCondition
         $this->validateCondition();
         return sprintf(
             '`%s` LIKE \'%s\'',
-            $this->fieldName,
+            $this->columnName,
             $this->pattern
         );
     }
 
     private function validateCondition()
     {
-        if (!$this->fieldName) throw new MissingFieldNameException();
+        if (!$this->columnName) throw new MissingColumnNameException();
         if ($this->pattern === null) throw new MissingValueException();
     }
 }

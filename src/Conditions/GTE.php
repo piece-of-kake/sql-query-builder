@@ -3,17 +3,17 @@
 namespace PoK\SQLQueryBuilder\Conditions;
 
 use PoK\SQLQueryBuilder\Interfaces\QueryCondition;
-use PoK\SQLQueryBuilder\Exceptions\Builder\MissingFieldNameException;
+use PoK\SQLQueryBuilder\Exceptions\Builder\MissingColumnNameException;
 use PoK\SQLQueryBuilder\Exceptions\Builder\MissingValueException;
 
 class GTE implements QueryCondition
 {
-    private $fieldName;
+    private $columnName;
     private $value;
 
-    public function __construct(string $fieldName, $value)
+    public function __construct(string $columnName, $value)
     {
-        $this->fieldName = $fieldName;
+        $this->columnName = $columnName;
         $this->value = $value;
     }
 
@@ -22,7 +22,7 @@ class GTE implements QueryCondition
         $this->validateCondition();
         return sprintf(
             '`%s` >= %s',
-            $this->fieldName,
+            $this->columnName,
             is_string($this->value)
                 ? "'$this->value'"
                 : (string)$this->value
@@ -31,7 +31,7 @@ class GTE implements QueryCondition
 
     private function validateCondition()
     {
-        if (!$this->fieldName) throw new MissingFieldNameException();
+        if (!$this->columnName) throw new MissingColumnNameException();
         if ($this->value === null) throw new MissingValueException();
     }
 }

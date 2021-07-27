@@ -3,13 +3,13 @@
 namespace PoK\SQLQueryBuilder\Queries;
 
 use PoK\SQLQueryBuilder\Interfaces\CanCompile;
-use PoK\SQLQueryBuilder\Table\FieldBuilder;
+use PoK\SQLQueryBuilder\Table\ColumnBuilder;
 use PoK\ValueObject\Collection;
 
 class CreateTable implements CanCompile
 {
     private $tableName;
-    private $fieldBuilders;
+    private $columnBuilders;
     private $engine;
     private $charset;
     private $collation;
@@ -17,14 +17,14 @@ class CreateTable implements CanCompile
     public function __construct(string $tableName)
     {
         $this->tableName = $tableName;
-        $this->fieldBuilders = new Collection([]);
+        $this->columnBuilders = new Collection([]);
     }
 
-    public function field(string $fieldName)
+    public function column(string $columnName)
     {
-        $fieldBuilder = new FieldBuilder($fieldName);
-        $this->fieldBuilders[] = $fieldBuilder;
-        return $fieldBuilder;
+        $columnBuilder = new ColumnBuilder($columnName);
+        $this->columnBuilders[] = $columnBuilder;
+        return $columnBuilder;
     }
 
     public function engine(string $engine = 'InnoDB')
@@ -45,7 +45,7 @@ class CreateTable implements CanCompile
         return $this;
     }
 
-    public function fields($callback)
+    public function columns($callback)
     {
         $callback($this);
         return $this;
@@ -53,13 +53,13 @@ class CreateTable implements CanCompile
 
     public function compile()
     {
-        $fields = $this->fieldBuilders
+        $columns = $this->columnBuilders
             ->map(function ($builder) {
                 return $builder->compile();
             })
             ->implode(',');
 
-        $primaryKeys = $this->fieldBuilders
+        $primaryKeys = $this->columnBuilders
             ->filter(function ($builder) {
                 return $builder->isPrimary();
             })
@@ -68,7 +68,7 @@ class CreateTable implements CanCompile
             })
             ->implode(',');
 
-        $uniqueKeys = $this->fieldBuilders
+        $uniqueKeys = $this->columnBuilders
             ->filter(function ($builder) {
                 return $builder->isUnique();
             })
@@ -89,7 +89,7 @@ class CreateTable implements CanCompile
                 %s
             ) %s %s %s;',
             $this->tableName,
-            $fields,
+            $columns,
             $primaryKeys ? ", PRIMARY KEY ($primaryKeys)" : '',
             $uniqueKeys ? $uniqueKeys : '',
             $this->engine ? "ENGINE=$this->engine" : '',

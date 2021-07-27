@@ -1,6 +1,6 @@
 <?php
 
-namespace PoK\SQLQueryBuilder\Table\Fields;
+namespace PoK\SQLQueryBuilder\Table\Columns;
 
 use PoK\SQLQueryBuilder\Interfaces\CanCompile;
 

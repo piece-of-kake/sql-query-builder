@@ -4,7 +4,7 @@ namespace PoK\SQLQueryBuilder\Queries;
 
 use PoK\SQLQueryBuilder\Interfaces\CanCompile;
 use PoK\SQLQueryBuilder\Exceptions\Builder\MissingTableNameException;
-use PoK\SQLQueryBuilder\Exceptions\Builder\MissingFieldNamesException;
+use PoK\SQLQueryBuilder\Exceptions\Builder\MissingColumnNamesException;
 use PoK\SQLQueryBuilder\Exceptions\Builder\MissingValuesException;
 use PoK\SQLQueryBuilder\Interfaces\LastInsertId;
 
@@ -18,7 +18,7 @@ class Insert implements CanCompile, LastInsertId
     /**
      * @var array
      */
-    private $fieldNames = [];
+    private $columnNames = [];
 
     /**
      * @var array
@@ -34,12 +34,12 @@ class Insert implements CanCompile, LastInsertId
     }
 
     /**
-     * @param [string] $fieldNames
+     * @param [string] $columnNames
      * @return Insert
      */
-    public function fields(string ...$fieldNames)
+    public function columns(string ...$columnNames)
     {
-        $this->fieldNames = $fieldNames;
+        $this->columnNames = $columnNames;
         return $this;
     }
 
@@ -57,24 +57,24 @@ class Insert implements CanCompile, LastInsertId
     {
         $this->validateQuery();
 
-        $fieldNames = sprintf('`%s`', implode('`, `', $this->fieldNames));
+        $columnNames = sprintf('`%s`', implode('`, `', $this->columnNames));
         $values = [];
         foreach ($this->rows as $row) {
             $values[] = sprintf("'%s'", implode("', '", $row));
         }
         $values = sprintf('(%s)', implode('), (', $values));
-        return "INSERT INTO `$this->tableName` ($fieldNames) VALUES $values";
+        return "INSERT INTO `$this->tableName` ($columnNames) VALUES $values";
     }
 
     /**
      * @throws MissingTableNameException
-     * @throws MissingFieldNamesException
+     * @throws MissingColumnNamesException
      * @throws MissingValuesException
      */
     private function validateQuery()
     {
         if (!$this->tableName) throw new MissingTableNameException();
-        if (empty($this->fieldNames)) throw new MissingFieldNamesException();
+        if (empty($this->columnNames)) throw new MissingColumnNamesException();
         if (empty($this->rows)) throw new MissingValuesException();
     }
 }

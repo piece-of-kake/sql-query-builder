@@ -21,7 +21,7 @@ class Select implements CanCompile, IsCollectable, CanPaginate, IsDataType
     /**
      * @var array
      */
-    private $fieldNames = [];
+    private $columnNames = [];
 
     /**
      * @var QueryCondition
@@ -59,22 +59,22 @@ class Select implements CanCompile, IsCollectable, CanPaginate, IsDataType
     }
 
     /**
-     * @param string $fieldName
+     * @param string $columnName
      * @return Select
      */
-    public function field(string $fieldName): Select
+    public function column(string $columnName): Select
     {
-        $this->fieldNames[] = $fieldName;
+        $this->columnNames[] = $columnName;
         return $this;
     }
 
     /**
-     * @param [string] $fieldNames
+     * @param [string] $columnNames
      * @return Select
      */
-    public function fields(string ...$fieldNames): Select
+    public function columns(string ...$columnNames): Select
     {
-        $this->fieldNames = array_merge($this->fieldNames, $fieldNames);
+        $this->columnNames = array_merge($this->columnNames, $columnNames);
         return $this;
     }
 
@@ -109,12 +109,12 @@ class Select implements CanCompile, IsCollectable, CanPaginate, IsDataType
     }
 
     /**
-     * @param string $fieldName
+     * @param string $columnName
      * @return Select
      */
-    public function groupBy(string $fieldName): Select
+    public function groupBy(string $columnName): Select
     {
-        $this->groupBy = $fieldName;
+        $this->groupBy = $columnName;
         return $this;
     }
 
@@ -151,7 +151,7 @@ class Select implements CanCompile, IsCollectable, CanPaginate, IsDataType
 
     public function cloneForTotalCount(): Select
     {
-        $clone = (new static($this->tableName))->field('count(*)');
+        $clone = (new static($this->tableName))->column('count(*)');
         if ($this->where instanceof QueryCondition) $clone->where($this->where);
         // Other parameters re not relevant for total count
         return $clone;
@@ -161,9 +161,9 @@ class Select implements CanCompile, IsCollectable, CanPaginate, IsDataType
     {
         $this->validateQuery();
 
-        $fieldNames = empty($this->fieldNames)
+        $columnNames = empty($this->columnNames)
             ? '*'
-            : implode(',', $this->fieldNames);
+            : implode(',', $this->columnNames);
 
         $where = $this->where instanceof QueryCondition
             ? ' WHERE ' . $this->where->compile()
@@ -189,7 +189,7 @@ class Select implements CanCompile, IsCollectable, CanPaginate, IsDataType
                 ? ''
                 : " OFFSET $this->offset");
 
-        return "SELECT $fieldNames FROM `$this->tableName`$where$groupBy$orderBy$limit$offset";
+        return "SELECT $columnNames FROM `$this->tableName`$where$groupBy$orderBy$limit$offset";
     }
 
     /**

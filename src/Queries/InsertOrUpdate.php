@@ -4,7 +4,7 @@ namespace PoK\SQLQueryBuilder\Queries;
 
 use PoK\SQLQueryBuilder\Interfaces\CanCompile;
 use PoK\SQLQueryBuilder\Exceptions\Builder\MissingTableNameException;
-use PoK\SQLQueryBuilder\Exceptions\Builder\MissingFieldNamesException;
+use PoK\SQLQueryBuilder\Exceptions\Builder\MissingColumnNamesException;
 use PoK\SQLQueryBuilder\Exceptions\Builder\MissingValuesException;
 use PoK\SQLQueryBuilder\Interfaces\LastInsertId;
 
@@ -18,7 +18,7 @@ class InsertOrUpdate implements CanCompile, LastInsertId
     /**
      * @var array
      */
-    private $fieldNames = [];
+    private $columnNames = [];
 
     /**
      * @var array
@@ -34,12 +34,12 @@ class InsertOrUpdate implements CanCompile, LastInsertId
     }
 
     /**
-     * @param [string] $fieldNames
+     * @param [string] $columnNames
      * @return InsertOrUpdate
      */
-    public function fields(string ...$fieldNames)
+    public function columns(string ...$columnNames)
     {
-        $this->fieldNames = $fieldNames;
+        $this->columnNames = $columnNames;
         return $this;
     }
 
@@ -58,27 +58,27 @@ class InsertOrUpdate implements CanCompile, LastInsertId
         $this->validateQuery();
 
 
-        $fieldNames = sprintf('`%s`', implode('`, `', $this->fieldNames));
+        $columnNames = sprintf('`%s`', implode('`, `', $this->columnNames));
         $values = sprintf("'%s'", implode("', '", $this->values));
 
         $updateValues = [];
-        foreach ($this->fieldNames as $pointer => $fieldName) {
-            $updateValues[] = sprintf("`%s`='%s'", $fieldName, $this->values[$pointer]);
+        foreach ($this->columnNames as $pointer => $columnName) {
+            $updateValues[] = sprintf("`%s`='%s'", $columnName, $this->values[$pointer]);
         }
         $updateValues = implode(', ', $updateValues);
 
-        return "INSERT INTO `$this->tableName` ($fieldNames) VALUES ($values) ON DUPLICATE KEY UPDATE $updateValues";
+        return "INSERT INTO `$this->tableName` ($columnNames) VALUES ($values) ON DUPLICATE KEY UPDATE $updateValues";
     }
 
     /**
      * @throws MissingTableNameException
-     * @throws MissingFieldNamesException
+     * @throws MissingColumnNamesException
      * @throws MissingValuesException
      */
     private function validateQuery()
     {
         if (!$this->tableName) throw new MissingTableNameException();
-        if (empty($this->fieldNames)) throw new MissingFieldNamesException();
+        if (empty($this->columnNames)) throw new MissingColumnNamesException();
         if (empty($this->values)) throw new MissingValuesException();
     }
 }

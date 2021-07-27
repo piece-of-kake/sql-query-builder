@@ -1,15 +1,15 @@
 <?php
 
-namespace PoK\SQLQueryBuilder\Table\Fields;
+namespace PoK\SQLQueryBuilder\Table\Columns;
 
 use PoK\SQLQueryBuilder\Interfaces\CanCompile;
-use PoK\SQLQueryBuilder\Table\Fields\Interfaces\PrimaryField;
-use PoK\SQLQueryBuilder\Table\Fields\Interfaces\UniqueField;
+use PoK\SQLQueryBuilder\Table\Columns\Interfaces\Primary;
+use PoK\SQLQueryBuilder\Table\Columns\Interfaces\Unique;
 
 /**
  * ItnF because Int is a reserved word
  */
-class IntF implements CanCompile, PrimaryField, UniqueField
+class IntF implements CanCompile, Primary, Unique
 {
     private $name;
     private $size;

@@ -1,28 +1,30 @@
 <?php
 
-namespace PoK\SQLQueryBuilder\Table\Fields;
+namespace PoK\SQLQueryBuilder\Table\Columns;
 
 use PoK\SQLQueryBuilder\Interfaces\CanCompile;
-use PoK\SQLQueryBuilder\Table\Fields\Interfaces\PrimaryField;
-use PoK\SQLQueryBuilder\Table\Fields\Interfaces\UniqueField;
+use PoK\SQLQueryBuilder\Table\Columns\Interfaces\Primary;
+use PoK\SQLQueryBuilder\Table\Columns\Interfaces\Unique;
 
-/**
- * ItnF because Int is a reserved word
- */
-class TinyInt implements CanCompile, PrimaryField, UniqueField
+class UnixTimestamp implements CanCompile, Primary, Unique
 {
     private $name;
+    private $size;
     private $isAutoIncrement = false;
     private $nullable = true;
     private $isPrimary = false;
     private $isUnique = false;
     private $unsigned = false;
-    private $hasDefault = false;
-    private $default;
 
     public function __construct($name)
     {
         $this->name = $name;
+    }
+
+    public function size(int $size)
+    {
+        $this->size = $size;
+        return $this;
     }
 
     public function autoIncrement()
@@ -64,24 +66,15 @@ class TinyInt implements CanCompile, PrimaryField, UniqueField
         return $this->isUnique;
     }
 
-    public function default($default = null)
-    {
-        $this->hasDefault = true;
-        $this->default = $default;
-        return $this;
-    }
-
     public function compile()
     {
         return sprintf(
-            '`%s` tinyint %s %s %s %s',
+            '`%s` int(10) %s %s %s',
             $this->name,
+            $this->size ? $this->size : '',
             $this->unsigned ? 'UNSIGNED' : '',
             $this->nullable ? 'NULL' : 'NOT NULL',
-            $this->isAutoIncrement ? 'AUTO_INCREMENT' : '',
-            $this->hasDefault
-                ? ($this->default !== null ? "DEFAULT $this->default" : 'DEFAULT NULL')
-                : ''
+            $this->isAutoIncrement ? 'AUTO_INCREMENT' : ''
         );
     }
 }

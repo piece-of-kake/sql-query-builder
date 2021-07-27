@@ -3,25 +3,25 @@
 namespace PoK\SQLQueryBuilder\Conditions;
 
 use PoK\SQLQueryBuilder\Interfaces\QueryCondition;
-use PoK\SQLQueryBuilder\Exceptions\Builder\MissingFieldNameException;
+use PoK\SQLQueryBuilder\Exceptions\Builder\MissingColumnNameException;
 
 class NotNull implements QueryCondition
 {
-    private $fieldName;
+    private $columnName;
 
-    public function __construct(string $fieldName)
+    public function __construct(string $columnName)
     {
-        $this->fieldName = $fieldName;
+        $this->columnName = $columnName;
     }
 
     public function compile()
     {
         $this->validateCondition();
-        return sprintf('`%s` IS NOT NULL', $this->fieldName);
+        return sprintf('`%s` IS NOT NULL', $this->columnName);
     }
 
     private function validateCondition()
     {
-        if (!$this->fieldName) throw new MissingFieldNameException();
+        if (!$this->columnName) throw new MissingColumnNameException();
     }
 }
