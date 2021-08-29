@@ -3,6 +3,8 @@
 namespace PoK\SQLQueryBuilder;
 
 use PoK\SQLQueryBuilder\Exceptions\Client\CannotConnectException;
+use PoK\SQLQueryBuilder\Exceptions\Client\DataTooLongException;
+use PoK\SQLQueryBuilder\Exceptions\Client\MissingColumnException;
 use PoK\SQLQueryBuilder\Exceptions\Client\MissingTableException;
 use PoK\SQLQueryBuilder\Interfaces\CanPaginate;
 use PoK\SQLQueryBuilder\Profiler\RecordQueryInterface;
@@ -91,8 +93,11 @@ class MySQLClient implements SQLClientInterface
             }
         } elseif ($query instanceof LastInsertId) {
             $statement = $this->connection->prepare($query->compile());
-            if (!$statement->execute())
-                $this->handleStatementError($statement);
+            try {
+                $statement->execute();
+            } catch (\PDOException $exception) {
+                $this->handleError($exception);
+            }
             return $this->connection->lastInsertId();
         } else {
             $statement = $this->connection->prepare($query->compile());
@@ -105,24 +110,15 @@ class MySQLClient implements SQLClientInterface
         }
     }
 
-    // ToDo: Perhaps move this to an exception handler (Sasa|05/2021)
-
-    private function handleStatementError(\PDOStatement $statement)
-    {
-        list ($SQLStateErrorCode, $driverSpecificErrorCode, $driverSpecificErrorMessage) = $statement->errorInfo();
-
-        if ($driverSpecificErrorCode === 1062 && strpos($driverSpecificErrorMessage, 'Duplicate') !== false) {
-            throw new DuplicateEntryException();
-        } else {
-            throw new UnhandledException($driverSpecificErrorMessage);
-        }
-    }
-
     private function handleError(\PDOException $exception)
     {
         switch ($exception->getCode()) {
             case '42S02':
                 throw new MissingTableException();
+            case '42S22':
+                throw new MissingColumnException($exception->getMessage());
+            case '22001':
+                throw new DataTooLongException($exception->getMessage());
             default:
                 throw new UnhandledException();
         }
