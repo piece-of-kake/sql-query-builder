@@ -6,6 +6,8 @@ use PoK\SQLQueryBuilder\Exceptions\Client\CannotConnectException;
 use PoK\SQLQueryBuilder\Exceptions\Client\DataTooLongException;
 use PoK\SQLQueryBuilder\Exceptions\Client\MissingColumnException;
 use PoK\SQLQueryBuilder\Exceptions\Client\MissingTableException;
+use PoK\SQLQueryBuilder\Exceptions\Client\SyntaxException;
+use PoK\SQLQueryBuilder\Exceptions\Client\UnhandledMySQLException;
 use PoK\SQLQueryBuilder\Interfaces\CanPaginate;
 use PoK\SQLQueryBuilder\Profiler\RecordQueryInterface;
 use PDO;
@@ -15,7 +17,6 @@ use PoK\SQLQueryBuilder\Interfaces\IsDataType;
 use PoK\SQLQueryBuilder\Queries\TableExists;
 use PoK\SQLQueryBuilder\Interfaces\LastInsertId;
 use PoK\SQLQueryBuilder\Exceptions\Client\DuplicateEntryException;
-use PoK\SQLQueryBuilder\Exceptions\Client\UnhandledException;
 use PoK\ValueObject\Collection;
 use PoK\ValueObject\PaginatedCollection;
 
@@ -119,8 +120,10 @@ class MySQLClient implements SQLClientInterface
                 throw new MissingColumnException($exception->getMessage());
             case '22001':
                 throw new DataTooLongException($exception->getMessage());
+            case '42000':
+                throw new SyntaxException($exception->getMessage());
             default:
-                throw new UnhandledException();
+                throw new UnhandledMySQLException($exception->getCode(), $exception->getMessage());
         }
     }
 }
