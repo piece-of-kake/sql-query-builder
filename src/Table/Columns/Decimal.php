@@ -3,14 +3,15 @@
 namespace PoK\SQLQueryBuilder\Table\Columns;
 
 use PoK\SQLQueryBuilder\Interfaces\CanCompile;
+use PoK\SQLQueryBuilder\Table\Columns\Interfaces\Primary;
+use PoK\SQLQueryBuilder\Table\Columns\Interfaces\Unique;
 
-/**
- * ItnF because Int is a reserved word
- */
-class Decimal implements CanCompile
+class Decimal implements CanCompile, Primary, Unique
 {
     private $name;
     private $size;
+    private $isPrimary = false;
+    private $isUnique = false;
     private $decimals;
     private $nullable = true;
 
@@ -23,6 +24,28 @@ class Decimal implements CanCompile
     {
         $this->size = $size;
         return $this;
+    }
+
+    public function primary()
+    {
+        $this->isPrimary = true;
+        return $this;
+    }
+
+    public function unique()
+    {
+        $this->isUnique = true;
+        return $this;
+    }
+
+    public function isPrimary(): bool
+    {
+        return $this->isPrimary;
+    }
+
+    public function isUnique(): bool
+    {
+        return $this->isUnique;
     }
 
     public function decimals(int $decimals)
@@ -49,7 +72,7 @@ class Decimal implements CanCompile
         }
 
         return sprintf(
-            '`%s` decimal%s %s',
+            '`%s` DECIMAL%s %s',
             $this->name,
             $size,
             $this->nullable ? 'NULL' : 'NOT NULL'

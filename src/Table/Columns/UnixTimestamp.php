@@ -9,28 +9,14 @@ use PoK\SQLQueryBuilder\Table\Columns\Interfaces\Unique;
 class UnixTimestamp implements CanCompile, Primary, Unique
 {
     private $name;
-    private $size;
     private $isAutoIncrement = false;
     private $nullable = true;
     private $isPrimary = false;
     private $isUnique = false;
-    private $unsigned = false;
 
     public function __construct($name)
     {
         $this->name = $name;
-    }
-
-    public function size(int $size)
-    {
-        $this->size = $size;
-        return $this;
-    }
-
-    public function autoIncrement()
-    {
-        $this->isAutoIncrement = true;
-        return $this;
     }
 
     public function primary()
@@ -51,11 +37,6 @@ class UnixTimestamp implements CanCompile, Primary, Unique
         return $this;
     }
 
-    public function unsigned()
-    {
-        $this->unsigned = true;
-    }
-
     public function isPrimary(): bool
     {
         return $this->isPrimary;
@@ -69,12 +50,10 @@ class UnixTimestamp implements CanCompile, Primary, Unique
     public function compile()
     {
         return sprintf(
-            '`%s` int(10) %s %s %s',
+            '`%s` INT(10) %s%s',
             $this->name,
-            $this->size ? $this->size : '',
-            $this->unsigned ? 'UNSIGNED' : '',
             $this->nullable ? 'NULL' : 'NOT NULL',
-            $this->isAutoIncrement ? 'AUTO_INCREMENT' : ''
+            $this->isAutoIncrement ? ' AUTO_INCREMENT' : ''
         );
     }
 }

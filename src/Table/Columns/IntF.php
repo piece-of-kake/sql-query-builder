@@ -73,12 +73,12 @@ class IntF implements CanCompile, Primary, Unique
     public function compile()
     {
         return sprintf(
-            '`%s` int(%s) %s %s %s',
+            '`%s` INT(%s) %s %s%s',
             $this->name,
             $this->size ? $this->size : '',
             $this->unsigned ? 'UNSIGNED' : '',
             $this->nullable ? 'NULL' : 'NOT NULL',
-            $this->isAutoIncrement ? 'AUTO_INCREMENT' : ''
+            $this->isAutoIncrement ? ' AUTO_INCREMENT' : ''
         );
     }
 }

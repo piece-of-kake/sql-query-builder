@@ -3,11 +3,15 @@
 namespace PoK\SQLQueryBuilder\Table\Columns;
 
 use PoK\SQLQueryBuilder\Interfaces\CanCompile;
+use PoK\SQLQueryBuilder\Table\Columns\Interfaces\Primary;
+use PoK\SQLQueryBuilder\Table\Columns\Interfaces\Unique;
 
-class Timestamp implements CanCompile
+class Timestamp implements CanCompile, Primary, Unique
 {
     private $name;
     private $nullable = true;
+    private $isPrimary = false;
+    private $isUnique = false;
     private $hasDefault = false;
     private $default;
 
@@ -22,6 +26,28 @@ class Timestamp implements CanCompile
         return $this;
     }
 
+    public function primary()
+    {
+        $this->isPrimary = true;
+        return $this;
+    }
+
+    public function unique()
+    {
+        $this->isUnique = true;
+        return $this;
+    }
+
+    public function isPrimary(): bool
+    {
+        return $this->isPrimary;
+    }
+
+    public function isUnique(): bool
+    {
+        return $this->isUnique;
+    }
+
     public function default($default = null)
     {
         $this->hasDefault = true;
@@ -32,11 +58,11 @@ class Timestamp implements CanCompile
     public function compile()
     {
         return sprintf(
-            '`%s` timestamp %s %s',
+            '`%s` TIMESTAMP %s%s',
             $this->name,
             $this->nullable ? 'NULL' : 'NOT NULL',
             $this->hasDefault
-                ? ($this->default ? "DEFAULT $this->default" : 'DEFAULT NULL')
+                ? ($this->default ? " DEFAULT $this->default" : ' DEFAULT NULL')
                 : ''
         );
     }

@@ -16,7 +16,6 @@ use PoK\SQLQueryBuilder\Interfaces\IsCollectable;
 use PoK\SQLQueryBuilder\Interfaces\IsDataType;
 use PoK\SQLQueryBuilder\Queries\TableExists;
 use PoK\SQLQueryBuilder\Interfaces\LastInsertId;
-use PoK\SQLQueryBuilder\Exceptions\Client\DuplicateEntryException;
 use PoK\ValueObject\Collection;
 use PoK\ValueObject\PaginatedCollection;
 

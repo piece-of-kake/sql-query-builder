@@ -3,6 +3,7 @@
 namespace PoK\SQLQueryBuilder\Table;
 
 use PoK\SQLQueryBuilder\Table\Columns\IntF;
+use PoK\SQLQueryBuilder\Table\Columns\Text;
 use PoK\SQLQueryBuilder\Table\Columns\TinyInt;
 use PoK\SQLQueryBuilder\Table\Columns\Varchar;
 use PoK\SQLQueryBuilder\Table\Columns\Timestamp;
@@ -66,6 +67,15 @@ class ColumnBuilder implements CanCompile
     public function string(): Varchar
     {
         $this->column = new Varchar($this->name);
+        return $this->column;
+    }
+
+    /**
+     * @return Text
+     */
+    public function text(): Text
+    {
+        $this->column = new Text($this->name);
         return $this->column;
     }
 

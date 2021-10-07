@@ -6,9 +6,6 @@ use PoK\SQLQueryBuilder\Interfaces\CanCompile;
 use PoK\SQLQueryBuilder\Table\Columns\Interfaces\Primary;
 use PoK\SQLQueryBuilder\Table\Columns\Interfaces\Unique;
 
-/**
- * ItnF because Int is a reserved word
- */
 class TinyInt implements CanCompile, Primary, Unique
 {
     private $name;
@@ -74,13 +71,13 @@ class TinyInt implements CanCompile, Primary, Unique
     public function compile()
     {
         return sprintf(
-            '`%s` tinyint %s %s %s %s',
+            '`%s` TINYINT %s %s%s%s',
             $this->name,
             $this->unsigned ? 'UNSIGNED' : '',
             $this->nullable ? 'NULL' : 'NOT NULL',
-            $this->isAutoIncrement ? 'AUTO_INCREMENT' : '',
+            $this->isAutoIncrement ? ' AUTO_INCREMENT' : '',
             $this->hasDefault
-                ? ($this->default !== null ? "DEFAULT $this->default" : 'DEFAULT NULL')
+                ? ($this->default !== null ? " DEFAULT $this->default" : ' DEFAULT NULL')
                 : ''
         );
     }

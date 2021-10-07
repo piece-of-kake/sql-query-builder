@@ -3,41 +3,18 @@
 namespace PoK\SQLQueryBuilder\Table\Columns;
 
 use PoK\SQLQueryBuilder\Interfaces\CanCompile;
-use PoK\SQLQueryBuilder\Table\Columns\Interfaces\Primary;
-use PoK\SQLQueryBuilder\Table\Columns\Interfaces\Unique;
 
-class Varchar implements CanCompile, Primary, Unique
+class Text implements CanCompile
 {
     private $name;
-    private $size;
     private $nullable = true;
     private $collation;
     private $hasDefault = false;
     private $default;
-    private $isPrimary = false;
-    private $isUnique = false;
 
     public function __construct($name)
     {
         $this->name = $name;
-    }
-
-    public function size(int $size)
-    {
-        $this->size = $size;
-        return $this;
-    }
-
-    public function primary()
-    {
-        $this->isPrimary = true;
-        return $this;
-    }
-
-    public function unique()
-    {
-        $this->isUnique = true;
-        return $this;
     }
 
     public function notNull()
@@ -59,22 +36,11 @@ class Varchar implements CanCompile, Primary, Unique
         return $this;
     }
 
-    public function isPrimary(): bool
-    {
-        return $this->isPrimary;
-    }
-
-    public function isUnique(): bool
-    {
-        return $this->isUnique;
-    }
-
     public function compile()
     {
         return sprintf(
-            '`%s` VARCHAR(%s)%s %s%s',
+            '`%s` TEXT%s %s%s',
             $this->name,
-            $this->size ? $this->size : '',
             $this->collation ? " COLLATE $this->collation" : '',
             $this->nullable ? 'NULL' : 'NOT NULL',
             $this->hasDefault
