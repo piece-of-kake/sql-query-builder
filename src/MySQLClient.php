@@ -3,6 +3,7 @@
 namespace PoK\SQLQueryBuilder;
 
 use PoK\SQLQueryBuilder\Exceptions\Client\CannotConnectException;
+use PoK\SQLQueryBuilder\Exceptions\Client\ColumnValueMismatchException;
 use PoK\SQLQueryBuilder\Exceptions\Client\DataTooLongException;
 use PoK\SQLQueryBuilder\Exceptions\Client\MissingColumnException;
 use PoK\SQLQueryBuilder\Exceptions\Client\MissingTableException;
@@ -121,6 +122,8 @@ class MySQLClient implements SQLClientInterface
                 throw new DataTooLongException($exception->getMessage());
             case '42000':
                 throw new SyntaxException($exception->getMessage());
+            case '21S01':
+                throw new ColumnValueMismatchException();
             default:
                 throw new UnhandledMySQLException($exception->getCode(), $exception->getMessage());
         }
