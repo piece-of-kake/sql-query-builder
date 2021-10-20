@@ -3,6 +3,7 @@
 namespace PoK\SQLQueryBuilder\ValueObject;
 
 use PoK\SQLQueryBuilder\Exceptions\Builder\MissingValueException;
+use PoK\SQLQueryBuilder\NameIncrementor;
 
 class UpdateValue
 {
@@ -13,6 +14,7 @@ class UpdateValue
     private $expression;
     private $fromTableName;
     private $fromColumnName;
+    private $valuePlaceholder;
 
     public function setTableName(string $tableName)
     {
@@ -74,6 +76,36 @@ class UpdateValue
         return $updateQuery;
     }
 
+    public function getPreparedQuery()
+    {
+        $updateQuery = '';
+        if ($this->tableName) $updateQuery .= "`$this->tableName`.";
+        $updateQuery .= "`$this->columnName`=";
+
+        switch (true) {
+            case $this->hasValue:
+                $updateQuery .= $this->getValuePlaceholder();
+                break;
+            case $this->expression !== null:
+                $updateQuery .= $this->expression;
+                break;
+            case $this->fromColumnName !== null:
+                $updateQuery .= $this->compileFromColumnName();
+                break;
+            default:
+                throw new MissingValueException();
+        }
+
+        return $updateQuery;
+    }
+
+    public function getExecuteValue()
+    {
+        return ($this->hasValue)
+            ? [$this->getValuePlaceholder() => $this->value]
+            : [];
+    }
+
     private function compileValue()
     {
         switch (true) {
@@ -91,5 +123,13 @@ class UpdateValue
         return ($this->fromTableName)
             ? "`$this->fromTableName`.`$this->fromColumnName`"
             : "`$this->fromColumnName`";
+    }
+
+    private function getValuePlaceholder()
+    {
+        if (!$this->valuePlaceholder)
+            $this->valuePlaceholder = NameIncrementor::next(':');
+
+        return $this->valuePlaceholder;
     }
 }

@@ -6,9 +6,12 @@ use PoK\SQLQueryBuilder\Interfaces\CanCompile;
 use PoK\SQLQueryBuilder\Exceptions\Builder\MissingTableNameException;
 use PoK\SQLQueryBuilder\Exceptions\Builder\MissingColumnNamesException;
 use PoK\SQLQueryBuilder\Exceptions\Builder\MissingValuesException;
+use PoK\SQLQueryBuilder\Interfaces\CanCompilePrepareStatement;
 use PoK\SQLQueryBuilder\Interfaces\LastInsertId;
+use PoK\SQLQueryBuilder\NameIncrementor;
+use PoK\ValueObject\Collection;
 
-class InsertOrUpdate implements CanCompile, LastInsertId
+class InsertOrUpdate implements CanCompile, CanCompilePrepareStatement, LastInsertId
 {
     /**
      * @var string
@@ -23,7 +26,12 @@ class InsertOrUpdate implements CanCompile, LastInsertId
     /**
      * @var array
      */
-    private $values = [];
+    private $rows = [];
+
+    /**
+     * @var array
+     */
+    private $valuePlaceholders;
 
     /**
      * @param string $tableName
@@ -45,11 +53,11 @@ class InsertOrUpdate implements CanCompile, LastInsertId
 
     /**
      * @param [*] $values
-     * @return InsertOrUpdate
+     * @return Insert
      */
-    public function values(...$values)
+    public function addValueRow(...$values)
     {
-        $this->values = $values;
+        $this->rows[] = $values;
         return $this;
     }
 
@@ -57,17 +65,71 @@ class InsertOrUpdate implements CanCompile, LastInsertId
     {
         $this->validateQuery();
 
-
         $columnNames = sprintf('`%s`', implode('`, `', $this->columnNames));
-        $values = sprintf("'%s'", implode("', '", $this->values));
+        $values = [];
+        foreach ($this->rows as $row) {
+            $values[] = sprintf("'%s'", implode("', '", $row));
+        }
+        $values = sprintf('(%s)', implode('), (', $values));
 
         $updateValues = [];
-        foreach ($this->columnNames as $pointer => $columnName) {
-            $updateValues[] = sprintf("`%s`='%s'", $columnName, $this->values[$pointer]);
+        foreach ($this->columnNames as $columnName) {
+            $updateValues[] = sprintf("`%s` = VALUES(`%s`)", $columnName, $columnName);
         }
         $updateValues = implode(', ', $updateValues);
 
-        return "INSERT INTO `$this->tableName` ($columnNames) VALUES ($values) ON DUPLICATE KEY UPDATE $updateValues";
+        return "INSERT INTO `$this->tableName` ($columnNames) VALUES $values ON DUPLICATE KEY UPDATE $updateValues";
+    }
+
+//INSERT INTO `table_name`(`column_1`, `column_2`, `column_3`, `column_4`, `column_5`) VALUES
+//('value_11','value_12','value_13','value_14','value_15'),
+//('value_21','value_22','value_23','value_24','value_25')
+//ON DUPLICATE KEY UPDATE
+//`column_1` = VALUES(`column_1`),
+//`column_2` = VALUES(`column_2`),
+//`column_3` = VALUES(`column_3`),
+//`column_4` = VALUES(`column_4`),
+//`column_5` = VALUES(`column_5`);
+
+    public function compilePrepare()
+    {
+        $this->validateQuery();
+
+        $columnNames = sprintf('`%s`', implode('`, `', $this->columnNames));
+
+        $updateValues = [];
+        foreach ($this->columnNames as $columnName) {
+            $updateValues[] = sprintf("`%s` = VALUES(`%s`)", $columnName, $columnName);
+        }
+        $updateValues = implode(', ', $updateValues);
+
+        return sprintf(
+            "INSERT INTO `%s` (%s) VALUES (%s) ON DUPLICATE KEY UPDATE %s",
+            $this->tableName,
+            $columnNames,
+            implode(', ', $this->getValuePlaceholders()),
+            $updateValues
+        );
+    }
+
+    public function compileExecute()
+    {
+        $this->validateQuery();
+
+        $values = [];
+        foreach ($this->rows as $row) {
+            $values[] = (new Collection($row))->replaceKeys($this->getValuePlaceholders())->toArray();
+        }
+
+        return $values;
+    }
+
+    private function getValuePlaceholders()
+    {
+        if (!$this->valuePlaceholders)
+            $this->valuePlaceholders = NameIncrementor::multipleNext(count($this->columnNames), ':');
+
+        return $this->valuePlaceholders;
     }
 
     /**
@@ -79,6 +141,6 @@ class InsertOrUpdate implements CanCompile, LastInsertId
     {
         if (!$this->tableName) throw new MissingTableNameException();
         if (empty($this->columnNames)) throw new MissingColumnNamesException();
-        if (empty($this->values)) throw new MissingValuesException();
+        if (empty($this->rows)) throw new MissingValuesException();
     }
 }

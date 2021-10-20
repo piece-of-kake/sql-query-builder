@@ -2,12 +2,23 @@
 
 namespace PoK\SQLQueryBuilder\Exceptions\Client;
 
+use PoK\Exception\HasDataInterface;
 use PoK\Exception\ServerError\InternalServerErrorException;
 
-class ColumnValueMismatchException extends InternalServerErrorException
+class ColumnValueMismatchException extends InternalServerErrorException implements HasDataInterface
 {
-    public function __construct(\Throwable $previous = NULL)
+    private $SQLMessage;
+
+    public function __construct(string $SQLMessage, \Throwable $previous = NULL)
     {
         parent::__construct('COLUMN_MISMATCH', $previous);
+        $this->SQLMessage = $SQLMessage;
+    }
+
+    public function getData()
+    {
+        return [
+            'explanation' => $this->SQLMessage
+        ];
     }
 }

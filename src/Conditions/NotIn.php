@@ -2,15 +2,22 @@
 
 namespace PoK\SQLQueryBuilder\Conditions;
 
+use PoK\SQLQueryBuilder\Interfaces\CanCompilePrepareStatement;
 use PoK\SQLQueryBuilder\Interfaces\QueryCondition;
 use PoK\SQLQueryBuilder\Exceptions\Builder\MissingColumnNameException;
 use PoK\SQLQueryBuilder\Exceptions\Builder\MissingValuesException;
 use PoK\SQLQueryBuilder\Interfaces\CanCompile;
+use PoK\SQLQueryBuilder\NameIncrementor;
+use PoK\ValueObject\Collection;
 
-class NotIn implements QueryCondition
+class NotIn implements QueryCondition, CanCompilePrepareStatement
 {
     private $columnName;
+    /**
+     * @var array | CanCompile | CanCompilePrepareStatement
+     */
     private $values;
+    private $valuePlaceholders;
 
     public function __construct(string $columnName, $values)
     {
@@ -43,5 +50,40 @@ class NotIn implements QueryCondition
             ($this->values === null || !is_array($this->values) || empty($this->values)) &&
             !($this->values instanceof CanCompile)
         ) throw new MissingValuesException();
+    }
+
+    public function compilePrepare()
+    {
+        $this->validateCondition();
+
+        if ($this->values instanceof CanCompilePrepareStatement) {
+            $compiledValues = $this->values->compilePrepare();
+        } else if ($this->values instanceof CanCompile) {
+            $compiledValues = $this->values->compile();
+        } else {
+            $compiledValues = implode(', ', $this->getValuePlaceholders());
+        }
+
+        return sprintf('`%s` NOT IN (%s)', $this->columnName, $compiledValues);
+    }
+
+    public function compileExecute()
+    {
+        $this->validateCondition();
+
+        if ($this->values instanceof CanCompilePrepareStatement) {
+            return $this->values->compileExecute();
+        } else if (is_array($this->values)) {
+            return (new Collection($this->values))->replaceKeys($this->getValuePlaceholders())->toArray();
+        }
+        return [];
+    }
+
+    private function getValuePlaceholders()
+    {
+        if (!$this->valuePlaceholders)
+            $this->valuePlaceholders = NameIncrementor::multipleNext(count($this->values), ':');
+
+        return $this->valuePlaceholders;
     }
 }

@@ -9,6 +9,7 @@ use PoK\SQLQueryBuilder\Exceptions\Client\MissingColumnException;
 use PoK\SQLQueryBuilder\Exceptions\Client\MissingTableException;
 use PoK\SQLQueryBuilder\Exceptions\Client\SyntaxException;
 use PoK\SQLQueryBuilder\Exceptions\Client\UnhandledMySQLException;
+use PoK\SQLQueryBuilder\Interfaces\CanCompilePrepareStatement;
 use PoK\SQLQueryBuilder\Interfaces\CanPaginate;
 use PoK\SQLQueryBuilder\Profiler\RecordQueryInterface;
 use PDO;
@@ -67,12 +68,7 @@ class MySQLClient implements SQLClientInterface
         if ($this->profiler instanceof RecordQueryInterface) $this->profiler->recordQuery($query->compile());
 
         if ($query instanceof IsCollectable && $query instanceof IsDataType) {
-            $statement = $this->connection->prepare($query->compile());
-            try {
-                $statement->execute();
-            } catch (\PDOException $exception) {
-                $this->handleError($exception);
-            }
+            $statement = $this->prepareAndExecuteQuery($query);
 
             $data = $statement->fetchAll($query->getDataType());
             if ($query instanceof CanPaginate && $query->hasPagination()) {
@@ -93,22 +89,33 @@ class MySQLClient implements SQLClientInterface
                 }
             }
         } elseif ($query instanceof LastInsertId) {
-            $statement = $this->connection->prepare($query->compile());
-            try {
-                $statement->execute();
-            } catch (\PDOException $exception) {
-                $this->handleError($exception);
-            }
+            $this->prepareAndExecuteQuery($query);
             return $this->connection->lastInsertId();
         } else {
-            $statement = $this->connection->prepare($query->compile());
-            try {
-                $statement->execute();
-            } catch (\PDOException $exception) {
-                $this->handleError($exception);
-            }
+            $statement = $this->prepareAndExecuteQuery($query);
             return $statement->rowCount();
         }
+    }
+
+    private function prepareAndExecuteQuery(CanCompile $query)
+    {
+        $this->connection->beginTransaction();
+
+        $statement = $query instanceof CanCompilePrepareStatement
+            ? $this->connection->prepare($query->compilePrepare())
+            : $this->connection->prepare($query->compile());
+        try {
+            if ($query instanceof CanCompilePrepareStatement)
+                foreach ($query->compileExecute() as $dataset)
+                    $statement->execute($dataset);
+            else
+                $statement->execute();
+        } catch (\PDOException $exception) {
+            $this->handleError($exception);
+        }
+        $this->connection->commit();
+
+        return $statement;
     }
 
     private function handleError(\PDOException $exception)
@@ -123,7 +130,7 @@ class MySQLClient implements SQLClientInterface
             case '42000':
                 throw new SyntaxException($exception->getMessage());
             case '21S01':
-                throw new ColumnValueMismatchException();
+                throw new ColumnValueMismatchException($exception->getMessage());
             default:
                 throw new UnhandledMySQLException($exception->getCode(), $exception->getMessage());
         }
