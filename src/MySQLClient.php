@@ -89,16 +89,12 @@ class MySQLClient implements SQLClientInterface
                 }
             }
         } elseif ($query instanceof LastInsertId) {
-            $this->connection->beginTransaction();
             $this->prepareAndExecuteQuery($query);
             $lastId = $this->connection->lastInsertId();
-            $this->connection->commit();
             return $lastId;
         } else {
-            $this->connection->beginTransaction();
             $statement = $this->prepareAndExecuteQuery($query);
-            $this->connection->commit();
-            return $statement->rowCount(); // ToDo: Check if it makes any difference if this is before or after commit() (Sasa|10/2021)
+            return $statement->rowCount();
         }
     }
 
