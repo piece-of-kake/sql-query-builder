@@ -38,7 +38,7 @@ class LTE implements QueryCondition, CanCompilePrepareStatement
         if ($this->value === null) throw new MissingValueException();
     }
 
-    public function compilePrepare()
+    public function compilePrepare(): string
     {
         $this->validateCondition();
 
@@ -49,7 +49,7 @@ class LTE implements QueryCondition, CanCompilePrepareStatement
         );
     }
 
-    public function compileExecute()
+    public function compileExecute(): array
     {
         $this->validateCondition();
 

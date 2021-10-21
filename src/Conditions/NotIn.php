@@ -52,7 +52,7 @@ class NotIn implements QueryCondition, CanCompilePrepareStatement
         ) throw new MissingValuesException();
     }
 
-    public function compilePrepare()
+    public function compilePrepare(): string
     {
         $this->validateCondition();
 
@@ -67,7 +67,7 @@ class NotIn implements QueryCondition, CanCompilePrepareStatement
         return sprintf('`%s` NOT IN (%s)', $this->columnName, $compiledValues);
     }
 
-    public function compileExecute()
+    public function compileExecute(): array
     {
         $this->validateCondition();
 

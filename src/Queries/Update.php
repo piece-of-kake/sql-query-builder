@@ -126,7 +126,7 @@ class Update implements CanCompile, CanCompilePrepareStatement
     // `representer` NOT LIKE :r AND
     // `type` IS NOT NULL
     // )
-    public function compilePrepare()
+    public function compilePrepare(): string
     {
         $this->validateQuery();
 
@@ -173,7 +173,7 @@ class Update implements CanCompile, CanCompilePrepareStatement
     //    [":t"]=> NULL
     //  ]
     //]
-    public function compileExecute()
+    public function compileExecute(): array
     {
         $values = $this->where instanceof CanCompilePrepareStatement
             ? $this->where->compileExecute()

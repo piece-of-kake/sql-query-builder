@@ -74,7 +74,7 @@ class Insert implements CanCompile, LastInsertId, CanCompilePrepareStatement
         return "INSERT INTO `$this->tableName` ($columnNames) VALUES $values";
     }
 
-    public function compilePrepare()
+    public function compilePrepare(): string
     {
         $this->validateQuery();
         $columnNames = sprintf('`%s`', implode('`, `', $this->columnNames));
@@ -94,7 +94,7 @@ class Insert implements CanCompile, LastInsertId, CanCompilePrepareStatement
         return $this->valuePlaceholders;
     }
 
-    public function compileExecute()
+    public function compileExecute(): array
     {
         $this->validateQuery();
 

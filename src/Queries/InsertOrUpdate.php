@@ -91,7 +91,7 @@ class InsertOrUpdate implements CanCompile, CanCompilePrepareStatement, LastInse
 //`column_4` = VALUES(`column_4`),
 //`column_5` = VALUES(`column_5`);
 
-    public function compilePrepare()
+    public function compilePrepare(): string
     {
         $this->validateQuery();
 
@@ -112,7 +112,7 @@ class InsertOrUpdate implements CanCompile, CanCompilePrepareStatement, LastInse
         );
     }
 
-    public function compileExecute()
+    public function compileExecute(): array
     {
         $this->validateQuery();
 

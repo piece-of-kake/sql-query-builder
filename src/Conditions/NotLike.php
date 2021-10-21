@@ -36,7 +36,7 @@ class NotLike implements QueryCondition, CanCompilePrepareStatement
         if ($this->pattern === null) throw new MissingValueException();
     }
 
-    public function compilePrepare()
+    public function compilePrepare(): string
     {
         $this->validateCondition();
 
@@ -47,7 +47,7 @@ class NotLike implements QueryCondition, CanCompilePrepareStatement
         );
     }
 
-    public function compileExecute()
+    public function compileExecute(): array
     {
         $this->validateCondition();
 

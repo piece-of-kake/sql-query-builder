@@ -252,7 +252,7 @@ class Select implements CanCompile, CanCompilePrepareStatement, IsCollectable, C
     // `user_id` NOT IN (:o, :p, :q, :r) AND
     // `representer` NOT LIKE :s AND
     // `type` IS NOT NULL)
-    public function compilePrepare()
+    public function compilePrepare(): string
     {
         $this->validateQuery();
 
@@ -312,7 +312,7 @@ class Select implements CanCompile, CanCompilePrepareStatement, IsCollectable, C
     //    [":s"]=> "%profile%"
     //   ]
     // ]
-    public function compileExecute()
+    public function compileExecute(): array
     {
         return $this->where instanceof CanCompilePrepareStatement
             ? [$this->where->compileExecute()]

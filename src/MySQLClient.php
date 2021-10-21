@@ -89,23 +89,26 @@ class MySQLClient implements SQLClientInterface
                 }
             }
         } elseif ($query instanceof LastInsertId) {
+            $this->connection->beginTransaction();
             $this->prepareAndExecuteQuery($query);
-            return $this->connection->lastInsertId();
+            $lastId = $this->connection->lastInsertId();
+            $this->connection->commit();
+            return $lastId;
         } else {
+            $this->connection->beginTransaction();
             $statement = $this->prepareAndExecuteQuery($query);
-            return $statement->rowCount();
+            $this->connection->commit();
+            return $statement->rowCount(); // ToDo: Check if it makes any difference if this is before or after commit() (Sasa|10/2021)
         }
     }
 
     private function prepareAndExecuteQuery(CanCompile $query)
     {
-        $this->connection->beginTransaction();
-
         $statement = $query instanceof CanCompilePrepareStatement
             ? $this->connection->prepare($query->compilePrepare())
             : $this->connection->prepare($query->compile());
         try {
-            if ($query instanceof CanCompilePrepareStatement)
+            if ($query instanceof CanCompilePrepareStatement && !empty($query->compileExecute()))
                 foreach ($query->compileExecute() as $dataset)
                     $statement->execute($dataset);
             else
@@ -113,7 +116,6 @@ class MySQLClient implements SQLClientInterface
         } catch (\PDOException $exception) {
             $this->handleError($exception);
         }
-        $this->connection->commit();
 
         return $statement;
     }

@@ -30,7 +30,7 @@ class LAnd implements QueryCondition, CanCompilePrepareStatement
         if (count($this->conditions) < 2) throw new InvalidNumberOfConditionsException();
     }
 
-    public function compilePrepare()
+    public function compilePrepare(): string
     {
         $this->validateCondition();
 
@@ -40,7 +40,7 @@ class LAnd implements QueryCondition, CanCompilePrepareStatement
         return sprintf('(%s)', implode(' AND ', $compiledArray));
     }
 
-    public function compileExecute()
+    public function compileExecute(): array
     {
         $executeData = [];
         foreach ($this->conditions as $condition) {

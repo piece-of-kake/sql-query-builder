@@ -4,7 +4,7 @@ namespace PoK\SQLQueryBuilder\Interfaces;
 
 interface CanCompilePrepareStatement
 {
-    public function compilePrepare();
+    public function compilePrepare(): string;
 
-    public function compileExecute();
+    public function compileExecute(): array;
 }
