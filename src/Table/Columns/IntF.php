@@ -18,6 +18,8 @@ class IntF implements CanCompile, Primary, Unique
     private $isPrimary = false;
     private $isUnique = false;
     private $unsigned = false;
+    private $hasDefault = false;
+    private $default;
 
     public function __construct($name)
     {
@@ -60,6 +62,13 @@ class IntF implements CanCompile, Primary, Unique
         return $this;
     }
 
+    public function default($default = null)
+    {
+        $this->hasDefault = true;
+        $this->default = $default;
+        return $this;
+    }
+
     public function isPrimary(): bool
     {
         return $this->isPrimary;
@@ -73,11 +82,14 @@ class IntF implements CanCompile, Primary, Unique
     public function compile()
     {
         return sprintf(
-            '`%s` INT(%s) %s %s%s',
+            '`%s` INT(%s) %s %s%s%s',
             $this->name,
             $this->size ? $this->size : '',
             $this->unsigned ? 'UNSIGNED' : '',
             $this->nullable ? 'NULL' : 'NOT NULL',
+            $this->hasDefault
+                ? ($this->default !== null ? " DEFAULT $this->default" : ' DEFAULT NULL')
+                : '',
             $this->isAutoIncrement ? ' AUTO_INCREMENT' : ''
         );
     }
