@@ -7,32 +7,78 @@ use PoK\SQLQueryBuilder\Interfaces\QueryCondition;
 use PoK\SQLQueryBuilder\Exceptions\Builder\MissingColumnNameException;
 use PoK\SQLQueryBuilder\Exceptions\Builder\MissingValueException;
 use PoK\SQLQueryBuilder\NameIncrementor;
+use PoK\ValueObject\Collection;
 
 class MatchAgainst implements QueryCondition, CanCompilePrepareStatement
 {
-    private $columnName;
+    /** @var Collection  */
+    private $columnNames;
+    /** @var string  */
     private $value;
+    /** @var  */
     private $valuePlaceholder;
 
-    public function __construct(string $columnName, string $value)
+    /** @var bool  */
+    private $isBooleanMode = false;
+    /** @var bool  */
+    private $isWithQueryExpansionMode = false;
+    /** @var bool  */
+    private $isNaturalLanguageMode = false;
+
+    public function __construct(string $value, string ...$columnNames )
     {
-        $this->columnName = $columnName;
         $this->value = $value;
+        $this->columnNames = new Collection($columnNames);
+    }
+
+    public function setBooleanMode(): MatchAgainst
+    {
+        $this->isBooleanMode = true;
+        return $this;
+    }
+
+    public function setNaturalLanguageMode(): MatchAgainst
+    {
+        $this->isNaturalLanguageMode = true;
+        return $this;
+    }
+
+    public function setWithQueryExpansionMode(): MatchAgainst
+    {
+        $this->isWithQueryExpansionMode = true;
+        return $this;
     }
 
     public function compile()
     {
         $this->validateCondition();
+
+        $mode = $this->isNaturalLanguageMode
+            ? " IN NATURAL LANGUAGE MODE"
+            : ($this->isWithQueryExpansionMode
+                ? " WITH QUERY EXPANSION"
+                : ($this->isBooleanMode
+                    ? " IN BOOLEAN MODE"
+                    : ""));
+
+        $columnNames = implode(", ", $this->columnNames
+            ->map(function (string $columnName) {
+                return "`$columnName`";
+            })
+            ->toArray()
+        );
+
         return sprintf(
-            'MATCH (`%s` ) AGAINST("%s")',
-            $this->columnName,
-            $this->value
+            'MATCH (%s) AGAINST("%s"%s)',
+            $columnNames,
+            $this->value,
+            $mode
         );
     }
 
     private function validateCondition()
     {
-        if (!$this->columnName) throw new MissingColumnNameException();
+        if (!$this->columnNames) throw new MissingColumnNameException();
         if ($this->value === null) throw new MissingValueException();
     }
 
@@ -40,10 +86,26 @@ class MatchAgainst implements QueryCondition, CanCompilePrepareStatement
     {
         $this->validateCondition();
 
+        $mode = $this->isNaturalLanguageMode
+            ? " IN NATURAL LANGUAGE MODE"
+            : ($this->isWithQueryExpansionMode
+                ? " WITH QUERY EXPANSION"
+                : ($this->isBooleanMode
+                    ? " IN BOOLEAN MODE"
+                    : ""));
+
+        $columnNames = implode(", ", $this->columnNames
+            ->map(function (string $columnName) {
+                return "`$columnName`";
+            })
+            ->toArray()
+        );
+
         return sprintf(
-            'MATCH (`%s` ) AGAINST(%s)',
-            $this->columnName,
-            $this->getValuePlaceholder()
+            'MATCH (%s) AGAINST(%s%s)',
+            $columnNames,
+            $this->getValuePlaceholder(),
+            $mode
         );
     }
 
